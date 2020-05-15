@@ -569,7 +569,7 @@ RESULT Engine::search(const std::string& problemLabel) {
             conflicts++; conflictC++;
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
-                (*output_stream) << "% Time limit exceeded!\n";
+                (*output_stream) << "%%%mzn-stat: satisfied=0\n";
                 return RES_UNK;
             }
 
@@ -755,7 +755,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 }
                 if (so.print_sol) {
                     problem->print(*output_stream);
-                    (*output_stream) << "\n----------\n";
+                    (*output_stream) << "%%%mzn-stat: satisfied:1\n";
                     output_stream->flush();
                 }
 #if DEBUG_VERBOSE
@@ -899,9 +899,9 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
         status = search(problemLabel);
         if (status == RES_GUN || status == RES_LUN) {
             if (solutions > 0)
-                (*output_stream) << "==========\n";
+                (*output_stream) << "%%%mzn-stat: satisfied=1\n";
             else
-                (*output_stream) << "=====UNSATISFIABLE=====\n";
+                (*output_stream) << "%%%mzn-stat: satisfied=0\n";
         }
     } else {
         // parallel
