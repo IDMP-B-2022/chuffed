@@ -11,6 +11,8 @@
 #include <chuffed/branching/branching.h>
 #include <chuffed/globals/mddglobals.h>
 
+#include <fstream>
+
 // Nonograms
 static void nonogram(vec<IntVar*>& x, vec<int>& blocks);
 
@@ -34,15 +36,15 @@ public:
 
     vec<IntVar*> x;
 
-    Nonogram() {
-        // Generate instance
-        
-        while(std::cin.peek() == '#' || std::cin.peek() == '\n')
-            skipComments(std::cin);
+    Nonogram(std::string file) {
 
-        std::cin >> r;
-        std::cin >> c;
-        
+        std::ifstream infile(file);
+
+        // Generate instance
+        infile >> r;
+
+        infile >> c;
+
 //        std::cout << r << " " << c << std::endl;
          
         for (int i = 0; i < r*c; i++) {
@@ -61,11 +63,11 @@ public:
                 rowvars.push( x[j*c + kk] );
             }
 
-            std::cin >> n;
+            infile >> n;
             while( n != 0 )
             {
                 row.push(n);
-                std::cin >> n;
+                infile >> n;
             }
 
             nonogram(rowvars, row);
@@ -81,16 +83,17 @@ public:
                 colvars.push( x[kk*c + j] );
             }
 
-            std::cin >> n;
+            infile >> n;
             while( n != 0 )
             {
                 col.push(n);
-                std::cin >> n;
+                infile >> n;
             }
 
             nonogram(colvars,col);
         }
-        
+
+        std::cout << "File parsed.\n";
 
         vec<IntVar*> pref_order;
         for (int i = 0; i < x.size(); i++ ) {
@@ -101,12 +104,7 @@ public:
         branch(pref_order, VAR_INORDER, VAL_MIN);
     }
  
-    void print(std::ostream& os) {
-      for (int i = 0; i < x.size(); i++) {
-        int v = x[i]->getVal();
-        os << i << ": " << v << "\n";
-      }
-    }
+    void print(std::ostream& os) {}
    
 };
 
@@ -179,7 +177,10 @@ static void nonogramDFA(vec<int>& blocks,
 int main(int argc, char** argv) {
     parseOptions(argc, argv);
 
-    engine.solve(new Nonogram());
+    std::string file;
+    file = argv[1];
+
+    engine.solve(new Nonogram(file));
 
     return 0;
 }
