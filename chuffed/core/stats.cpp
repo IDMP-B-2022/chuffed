@@ -15,32 +15,32 @@ void Engine::printStats() {
 	duration search_time = total_time - init_time;
 
 	// MiniZinc standard statistics
-	printf("%%%%%%mzn-stat: nodes=%lld\n", nodes);
-	printf("%%%%%%mzn-stat: failures=%lld\n", conflicts);
-	printf("%%%%%%mzn-stat: restarts=%d\n", restart_count);
-	printf("%%%%%%mzn-stat: variables=%d\n", vars.size() + sat.nVars());
-	printf("%%%%%%mzn-stat: intVars=%d\n", vars.size());
-	printf("%%%%%%mzn-stat: boolVariables=%d\n", sat.nVars()-2); //Do not count constant True/False
+	printf("%lld,", nodes);
+	printf("%lld,", conflicts);
+	printf("%d,", restart_count);
+	printf("%d,", vars.size() + sat.nVars());
+	printf("%d,", vars.size());
+	printf("%d,", sat.nVars()-2); //Do not count constant True/False
 //    printf("%%%%%%mzn-stat: floatVariables=%d\n", );
 //    printf("%%%%%%mzn-stat: setVariables=%d\n", );
-	printf("%%%%%%mzn-stat: propagators=%d\n", propagators.size());
-	printf("%%%%%%mzn-stat: propagations=%lld\n", propagations);
-	printf("%%%%%%mzn-stat: peakDepth=%d\n", peak_depth);
-	printf("%%%%%%mzn-stat: nogoods=%lld\n", conflicts); //TODO: Is this correct (e.g., sat.learnts.size())
-	printf("%%%%%%mzn-stat: backjumps=%lld\n", sat.back_jumps);
-	printf("%%%%%%mzn-stat: peakMem=%.2f\n", memUsed());
-	printf("%%%%%%mzn-stat: time=%.3f\n", to_sec(total_time));
-	printf("%%%%%%mzn-stat: initTime=%.3f\n", to_sec(init_time));
-	printf("%%%%%%mzn-stat: solveTime=%.3f\n", to_sec(search_time));
+	printf("%d,", propagators.size());
+	printf("%lld,", propagations);
+	printf("%d,", peak_depth);
+	printf("%lld,", conflicts); //TODO: Is this correct (e.g., sat.learnts.size())
+	printf("%lld,", sat.back_jumps);
+	printf("%.2f,", memUsed());
+	printf("%.3f,", to_sec(total_time));
+	printf("%.3f,", to_sec(init_time));
+	printf("%.3f", to_sec(search_time));
 
 	// Chuffed specific statistics
 	if (opt_var) {
 		printf("%%%%%%mzn-stat: objective=%d\n", best_sol);
 		printf("%%%%%%mzn-stat: optTime=%.3f\n", to_sec(opt_time));
 	}
-	printf("%%%%%%mzn-stat: baseMem=%.2f\n", base_memory);
-	printf("%%%%%%mzn-stat: trailMem=%.2f\n", trail.capacity() * sizeof(TrailElem) / 1048576.0);
-	printf("%%%%%%mzn-stat: randomSeed=%d\n", so.rnd_seed);
+	printf("%.2f", base_memory);
+	printf("%.2f\n", trail.capacity() * sizeof(TrailElem) / 1048576.0);
+	
 
 	if (so.verbosity >= 2) {
 		int nl = 0, el = 0, ll = 0, sl = 0;
