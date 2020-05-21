@@ -39,7 +39,7 @@ void Engine::printStats() {
 		printf("%%%%%%mzn-stat: optTime=%.3f\n", to_sec(opt_time));
 	}
 	printf("%.2f", base_memory);
-	printf("%.2f\n", trail.capacity() * sizeof(TrailElem) / 1048576.0);
+	printf("%.2f,", trail.capacity() * sizeof(TrailElem) / 1048576.0);
 	
 
 	if (so.verbosity >= 2) {
@@ -53,11 +53,11 @@ void Engine::printStats() {
 				default: NEVER;
 			}
 		}
-		printf("%%%%%%mzn-stat: noLitIntVars=%d\n", nl);
-		printf("%%%%%%mzn-stat: eagerLitIntVars=%d\n", el);
-		printf("%%%%%%mzn-stat: lazyLitIntVars=%d\n", ll);
-		printf("%%%%%%mzn-stat: sparseLitIntVars=%d\n", sl);
-		printf("%%%%%%mzn-stat: solutions=%lld\n", solutions);
+		printf("%d,", nl);
+		printf("%d,", el);
+		printf("%d,", ll);
+		printf("%d,", sl);
+//		printf("%%%%%%mzn-stat: solutions=%lld\n", solutions);
 
 		if (so.ldsb) {
 			printf("%%%%%%mzn-stat: ldsbTime=%.3f\n", to_sec(ldsb.ldsb_time));

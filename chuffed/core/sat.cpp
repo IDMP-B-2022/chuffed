@@ -559,14 +559,14 @@ void SAT::printLearntStats() {
 }
 
 void SAT::printStats() {
-	printf("%%%%%%mzn-stat: binClauses=%d\n", bin_clauses);
-	printf("%%%%%%mzn-stat: ternClauses=%d\n", tern_clauses);
-	printf("%%%%%%mzn-stat: longClauses=%d\n", long_clauses);
-	printf("%%%%%%mzn-stat: avgLongClauseLen=%.2f\n", long_clauses ? (double) (clauses_literals - 3*tern_clauses) / long_clauses : 0);
-	printf("%%%%%%mzn-stat: learntClauses=%d\n", learnts.size());
-	printf("%%%%%%mzn-stat: avgLearntClauseLen=%.2f\n", learnts.size() ? (double) learnts_literals / learnts.size() : 0);
-	printf("%%%%%%mzn-stat: satPropagations=%lld\n", propagations);
-	printf("%%%%%%mzn-stat: naturalRestarts=%lld\n", nrestarts);
+	printf("%d,", bin_clauses);
+	printf("%d,", tern_clauses);
+	printf("%d,", long_clauses);
+	printf("%.2f,", long_clauses ? (double) (clauses_literals - 3*tern_clauses) / long_clauses : 0);
+	printf("%d,", learnts.size());
+	printf("%.2f,", learnts.size() ? (double) learnts_literals / learnts.size() : 0);
+	printf("%lld,", propagations);
+	printf("%lld,", nrestarts);
 	if (so.ldsb) {
 		printf("%%%%%%mzn-stat: pushbackTime=%.3f\n", to_sec(pushback_time));
 	}
