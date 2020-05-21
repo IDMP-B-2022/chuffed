@@ -26,7 +26,7 @@ void Engine::printStats() {
 	printf("%d,", propagators.size());
 	printf("%lld,", propagations);
 	printf("%d,", peak_depth);
-	printf("%lld,", conflicts); //TODO: Is this correct (e.g., sat.learnts.size())
+//	printf("%lld,", conflicts); //TODO: Is this correct (e.g., sat.learnts.size())
 	printf("%lld,", sat.back_jumps);
 	printf("%.2f,", memUsed());
 	printf("%.3f,", to_sec(total_time));
