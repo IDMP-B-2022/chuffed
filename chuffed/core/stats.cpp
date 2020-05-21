@@ -31,14 +31,14 @@ void Engine::printStats() {
 	printf("%.2f,", memUsed());
 	printf("%.3f,", to_sec(total_time));
 	printf("%.3f,", to_sec(init_time));
-	printf("%.3f", to_sec(search_time));
+	printf("%.3f,", to_sec(search_time));
 
 	// Chuffed specific statistics
 	if (opt_var) {
 		printf("%%%%%%mzn-stat: objective=%d\n", best_sol);
 		printf("%%%%%%mzn-stat: optTime=%.3f\n", to_sec(opt_time));
 	}
-	printf("%.2f", base_memory);
+	printf("%.2f,", base_memory);
 	printf("%.2f,", trail.capacity() * sizeof(TrailElem) / 1048576.0);
 	
 
