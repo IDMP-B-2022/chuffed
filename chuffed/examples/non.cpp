@@ -93,8 +93,6 @@ public:
             nonogram(colvars,col);
         }
 
-        std::cout << "File parsed.\n";
-
         vec<IntVar*> pref_order;
         for (int i = 0; i < x.size(); i++ ) {
             pref_order.push(x[i]);
