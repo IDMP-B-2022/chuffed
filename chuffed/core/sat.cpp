@@ -588,7 +588,6 @@ void SAT::printStats() {
 		cumulative_activity += rawActivity;
 	}
 	cumulative_activity /= 10;
-	printf("These are my custom datas");
 	printf("%d,", cumulative_activity);
 	printf("%d,", max_activity);
 	printf("%d,", median_activity);
