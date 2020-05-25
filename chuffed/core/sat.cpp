@@ -570,6 +570,28 @@ void SAT::printStats() {
 	if (so.ldsb) {
 		printf("%%%%%%mzn-stat: pushbackTime=%.3f\n", to_sec(pushback_time));
 	}
+	// Computes the average, max and median raw activity of the top 10 clauses.
+	std::sort((Clause**) learnts, (Clause**) learnts + learnts.size(), raw_activity_gt());
+	int cumulative_activity = 0;
+	int median_activity = -1;
+	int max_activity = 0;
+	for (int i = 0; i < 10 && i < learnts.size(); i++){
+		int rawActivity = learnts[i]->rawActivity();
+		if (rawActivity >= max_activity){
+			max_activity = rawActivity;
+		}
+		
+		if (i == 4){
+			median_activity = (learnts[i+1]->rawActivity() + rawActivity) / 2;
+		}
+		
+		cumulative_activity += rawActivity;
+	}
+	cumulative_activity /= 10;
+	printf("These are my custom datas");
+	printf("%d,", cumulative_activity);
+	printf("%d,", max_activity);
+	printf("%d,", median_activity);
 }
 
 
