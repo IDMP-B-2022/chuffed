@@ -7,6 +7,18 @@
 #include <chuffed/mip/mip.h>
 #include <chuffed/ldsb/ldsb.h>
 
+void Engine::perIterationStats() {
+	printStats(); // Existing output
+
+	// New features
+	int upper_bound = std::pow(2, vars.size())
+	 // loose upper-bound on nodes to be explored (open nodes)
+	 // see https://ojs.aaai.org/index.php/AAAI/article/download/3944/3822 for context
+	int open = upper_bound - nodes;
+
+	
+}
+
 
 void Engine::printStats() {
 	if (so.thread_no != -1) return;
