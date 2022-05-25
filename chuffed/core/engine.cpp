@@ -239,6 +239,7 @@ inline void Engine::doFixPointStuff() {
 
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes;
+    printStats();
     altpath.push_back(alt);
     if (di.var) {
 #if DEBUG_VERBOSE
@@ -520,7 +521,6 @@ RESULT Engine::search(const std::string& problemLabel) {
     decisionLevelTip.push_back(1);
 
     /* boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::universal_time(); */
-
     while (true) {
         if (so.parallel && slave.checkMessages()) return RES_UNK;
 
