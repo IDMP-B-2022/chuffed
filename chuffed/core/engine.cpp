@@ -200,9 +200,15 @@ Engine::Engine()
 
     , start_time(chuffed_clock::now())
     , opt_time(duration::zero())
+    , ewma_best_sol(0)
     , conflicts(0)
+    , ewma_conflicts(0) //test feature ignore for now
+    , nodepath_len(0)
+    , ewma_nodepath_len(0)
     , nodes(1)
+    , ewma_opennodes(0)
     , propagations(0)
+    , ewma_propagations(0)
     , solutions(0)
     , next_simp_db(0)
     , output_stream(&std::cout)
@@ -238,7 +244,11 @@ inline void Engine::doFixPointStuff() {
 }
 
 inline void Engine::makeDecision(DecInfo& di, int alt) {
-    ++nodes;
+    ++nodes; //increment generated nodes
+    nodepath_len = nodepath.size();
+    printf("#####################node path len %lld\n",nodepath_len);
+    ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - nodepath_len)); //change in open nodes
+    ewma_nodepath_len = ceil(0.95*ewma_nodepath_len + (0.05*nodepath_len));
     printStats();
     altpath.push_back(alt);
     if (di.var) {
@@ -287,6 +297,8 @@ void optimize(IntVar* v, int t) {
 
 inline bool Engine::constrain() {
     best_sol = opt_var->getVal();
+    ewma_best_sol = (int)((0.95*ewma_best_sol) + (0.05*(best_sol)));
+
     opt_time = std::chrono::duration_cast<duration>(chuffed_clock::now() - start_time) - init_time;
 
     sat.btToLevel(0);
@@ -330,6 +342,7 @@ bool Engine::propagate() {
     }
 
     last_prop = NULL;
+    int curr_propagations = 0;
 
  WakeUp:
 
@@ -343,11 +356,13 @@ bool Engine::propagate() {
     if (sat.confl) return false;
 
     last_prop = NULL;
+    
 
     for (int i = 0; i < num_queues; i++) {
         if (p_queue[i].size()) {
             Propagator *p = p_queue[i].last(); p_queue[i].pop();
             propagations++;
+            curr_propagations++;
             bool ok = p->propagate();
             p->clearPropState();
             if (!ok) return false;
@@ -355,6 +370,7 @@ bool Engine::propagate() {
         }
     }
 
+    ewma_propagations = ceil((0.95*ewma_propagations)+(0.05*curr_propagations));
     return true;
 }
 
@@ -519,9 +535,10 @@ RESULT Engine::search(const std::string& problemLabel) {
 #endif
   
     decisionLevelTip.push_back(1);
-
+    int curr_conflicts = 0;
     /* boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::universal_time(); */
     while (true) {
+        
         if (so.parallel && slave.checkMessages()) return RES_UNK;
 
         int nodeid = nextnodeid;
@@ -567,6 +584,7 @@ RESULT Engine::search(const std::string& problemLabel) {
 
         Conflict:
             conflicts++; conflictC++;
+            curr_conflicts++;
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
                 (*output_stream) << "0,";
@@ -856,6 +874,9 @@ RESULT Engine::search(const std::string& problemLabel) {
 
         }
     }
+    //for test feature ignore for now
+    //ewma_conflicts = ceil((0.95*ewma_conflicts)+ 0.05*curr_conflicts);
+    //curr_conflicts = 0;
 }
 
 void Engine::solve(Problem *p, const std::string& problemLabel) {
