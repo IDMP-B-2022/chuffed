@@ -76,6 +76,7 @@ SAT::SAT() :
 	, learnt_clauses(0)
 	, propagations(0)
 	, back_jumps(0)
+	, ewma_back_jumps(0)
 	, nrestarts(0)
 	, next_simp_db(100000)
 	, clauses_literals(0)
