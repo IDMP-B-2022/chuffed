@@ -246,7 +246,6 @@ inline void Engine::doFixPointStuff() {
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes; //increment generated nodes
     nodepath_len = nodepath.size();
-    // printf("#####################node path len %lld\n",nodepath_len);
     ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - nodepath_len)); //change in open nodes
     ewma_nodepath_len = ceil(0.95*ewma_nodepath_len + (0.05*nodepath_len));
     printStats();
