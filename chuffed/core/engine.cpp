@@ -246,7 +246,7 @@ inline void Engine::doFixPointStuff() {
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes; //increment generated nodes
     nodepath_len = nodepath.size();
-    printf("#####################node path len %lld\n",nodepath_len);
+    // printf("#####################node path len %lld\n",nodepath_len);
     ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - nodepath_len)); //change in open nodes
     ewma_nodepath_len = ceil(0.95*ewma_nodepath_len + (0.05*nodepath_len));
     printStats();
@@ -587,7 +587,7 @@ RESULT Engine::search(const std::string& problemLabel) {
             curr_conflicts++;
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
-                (*output_stream) << "0,";
+                (*output_stream) << "% Time limit exceeded!\n";
                 return RES_UNK;
             }
 
@@ -773,7 +773,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 }
                 if (so.print_sol) {
                     problem->print(*output_stream);
-                    (*output_stream) << "1,";
+                    (*output_stream) << "\n----------\n";
                     output_stream->flush();
                 }
 #if DEBUG_VERBOSE
@@ -920,9 +920,9 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
         status = search(problemLabel);
         if (status == RES_GUN || status == RES_LUN) {
             if (solutions > 0)
-                (*output_stream) << "1,";
+                (*output_stream) << "==========\n";
             else
-                (*output_stream) << "0,";
+                (*output_stream) << "=====UNSATISFIABLE=====\n";
         }
     } else {
         // parallel
