@@ -453,9 +453,9 @@ void parseOptions(int& argc, char**& argv, std::string* fileArg, const std::stri
       so.nof_solutions = intBuffer;
     } else if (cop.get("-t --time-out", &intBuffer)) {
       // TODO: Remove warning when appropriate
-      std::cerr << "WARNING: the --time-out flag has recently been changed."
-                << "The time-out is now provided in milliseconds instead of seconds"
-                << std::endl;
+      // std::cerr << "WARNING: the --time-out flag has recently been changed."
+      //           << "The time-out is now provided in milliseconds instead of seconds"
+      //           << std::endl;
       so.time_out = duration(intBuffer);
     } else if (cop.get("-r --rnd-seed", &intBuffer)) {
       so.rnd_seed = intBuffer;
