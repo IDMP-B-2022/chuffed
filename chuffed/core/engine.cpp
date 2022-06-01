@@ -203,8 +203,6 @@ Engine::Engine()
     , ewma_best_sol(0)
     , conflicts(0)
     , ewma_conflicts(0) //test feature ignore for now
-    , nodepath_len(0)
-    , ewma_nodepath_len(0)
     , nodes(1)
     , ewma_opennodes(0)
     , propagations(0)
@@ -245,9 +243,11 @@ inline void Engine::doFixPointStuff() {
 
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes; //increment generated nodes
-    nodepath_len = nodepath.size();
-    ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - nodepath_len)); //change in open nodes
-    ewma_nodepath_len = ceil(0.95*ewma_nodepath_len + (0.05*nodepath_len));
+    ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - decisionLevel())); //change in open nodes
+    ewma_decision_level_engine = ceil(0.95*ewma_decision_level_engine + (0.05*decisionLevel()));
+    ewma_decision_level_sat = ceil(0.95*ewma_decision_level_sat + (0.05*sat.decisionLevel()));
+    ewma_decision_level_mip = ceil(0.95*ewma_decision_level_mip + (0.05*mip->decisionLevel()));
+
     printStats();
     altpath.push_back(alt);
     if (di.var) {
