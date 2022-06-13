@@ -201,13 +201,28 @@ Engine::Engine()
     , start_time(chuffed_clock::now())
     , opt_time(duration::zero())
     , ewma_best_sol(0)
+    , ewma_roc_best_objective(0)
+    , prev_best_soln(0)
+    , T_best_sol (chuffed_clock::now())
+    , T_prev_best_soln (chuffed_clock::now())
     , conflicts(0)
     , ewma_conflicts(0) //test feature ignore for now
+    , ewma_roc_conflicts(0)
+    , curr_conflicts(0)
+    , T_conflict(chuffed_clock::now())
+    , T_prev_conflict(chuffed_clock::now())
     , nodes(1)
     , ewma_opennodes(0)
     , propagations(0)
+	, ewma_roc_propagations(0)
+    , T_propagations(chuffed_clock::now())
+    , T_prev_propagations(chuffed_clock::now())
     , ewma_propagations(0)
     , solutions(0)
+    , prev_solutions(0)
+    , ewma_roc_solutions(0)
+    , T_solutions(chuffed_clock::now())
+    , T_prev_solutions(chuffed_clock::now())
     , next_simp_db(0)
     , output_stream(&std::cout)
 {
@@ -295,8 +310,15 @@ void optimize(IntVar* v, int t) {
 }
 
 inline bool Engine::constrain() {
+   if (opt_var->getVal() != best_sol){
+        T_prev_best_soln = T_best_sol;
+        T_best_sol = chuffed_clock::now();
+    }
+    prev_best_soln = best_sol;
     best_sol = opt_var->getVal();
     ewma_best_sol = (int)((0.95*ewma_best_sol) + (0.05*(best_sol)));
+    ewma_roc_best_objective = ((0.95*ewma_roc_best_objective) 
+     + (0.05*( abs(best_sol - prev_best_soln)/ (std::chrono::duration_cast<std::chrono::seconds>(T_best_sol - T_prev_best_soln).count()))));
 
     opt_time = std::chrono::duration_cast<duration>(chuffed_clock::now() - start_time) - init_time;
 
@@ -342,6 +364,8 @@ bool Engine::propagate() {
 
     last_prop = NULL;
     int curr_propagations = 0;
+    T_prev_propagations = T_propagations;
+    T_propagations = chuffed_clock::now();
 
  WakeUp:
 
@@ -370,6 +394,9 @@ bool Engine::propagate() {
     }
 
     ewma_propagations = ceil((0.95*ewma_propagations)+(0.05*curr_propagations));
+    ewma_roc_propagations = ((0.95*propagations) 
+     + (0.05*( curr_propagations/ (std::chrono::duration_cast<std::chrono::seconds>(T_propagations - T_prev_propagations).count()))));
+
     return true;
 }
 
@@ -505,6 +532,11 @@ RESULT Engine::search(const std::string& problemLabel) {
     unsigned int nof_conflicts = getRestartLimit(starts);
     unsigned int conflictC = 0;
 
+    if (T_conflict != T_prev_conflict){
+        ewma_roc_conflicts = ((0.95*ewma_roc_conflicts) 
+        + (0.05*( curr_conflicts / (std::chrono::duration_cast<std::chrono::seconds>(T_conflict - T_prev_conflict).count()))));
+    }
+
     if (so.print_variable_list) {
         std::ofstream s;
         s.open("variable-list");
@@ -534,7 +566,11 @@ RESULT Engine::search(const std::string& problemLabel) {
 #endif
   
     decisionLevelTip.push_back(1);
-    int curr_conflicts = 0;
+    curr_conflicts = 0;
+    T_prev_conflict = T_conflict;
+
+    prev_solutions = solutions;
+    T_prev_solutions = T_solutions;
     /* boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::universal_time(); */
     while (true) {
         
@@ -584,6 +620,10 @@ RESULT Engine::search(const std::string& problemLabel) {
         Conflict:
             conflicts++; conflictC++;
             curr_conflicts++;
+
+            T_conflict = chuffed_clock::now(); //always 0
+            //printf("--------------curr time=%.3f\n", std::chrono::time_point_cast<std::chrono::nanoseconds>(T_conflict));
+            
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
                 (*output_stream) << "% Time limit exceeded!\n";
@@ -765,8 +805,14 @@ RESULT Engine::search(const std::string& problemLabel) {
 
             if (!di) di = branching->branch();
 
+
             if (!di) {
+                
+                T_solutions = chuffed_clock::now();
                 solutions++;
+                ewma_roc_solutions = ((0.95*ewma_roc_solutions) 
+                   + (0.05*( abs(solutions - prev_solutions)/ (std::chrono::duration_cast<std::chrono::seconds>(T_solutions - T_prev_solutions).count()))));
+
                 if (std::stringstream* oss = dynamic_cast<std::stringstream*>(output_stream)) {
                     oss->str("");
                 }
@@ -949,6 +995,5 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
 #endif
 
     if (so.verbosity >= 1) printStats();
-
     if (so.parallel) master.finalizeMPI();
 }
