@@ -8,25 +8,29 @@
 #include <chuffed/ldsb/ldsb.h>
 
 
+
 void Engine::printStats() {
 	if (so.thread_no != -1) return;
 
 	auto total_time = std::chrono::duration_cast<duration>(chuffed_clock::now() - start_time);
 	duration search_time = total_time - init_time;
 
-	printf("%%%%%%mzn-stat: conflicts=%lld\n", conflicts);
-	printf("%%%%%%mzn-stat: ewma_conflicts=%lld\n", ewma_conflicts);
+	printf("%%%%%%mzn-stat: conflicts=%lld\n", conflicts); 
+	printf("%%%%%%mzn-stat: ewma_roc_conflicts=%.3f\n", ewma_roc_conflicts); 
 	printf("%%%%%%mzn-stat: nodes=%lld\n",nodes); //increment generated nodes
 	printf("%%%%%%mzn-stat: ewma_opennodes=%lld\n", ewma_opennodes); //change in num of open nodes
 	printf("%%%%%%mzn-stat: vars=%d\n", vars.size() + sat.nVars()); // variables
 	printf("%%%%%%mzn-stat: back_jumps=%lld\n", sat.back_jumps);
 	printf("%%%%%%mzn-stat: ewma_back_jumps=%lld\n", sat.ewma_back_jumps);
+	printf("%%%%%%mzn-stat: ewma_roc_back_jumps=%.3f\n", sat.ewma_roc_back_jumps);
  	printf("%%%%%%mzn-stat: solutions=%lld\n", solutions); // num of solutions found
+	printf("%%%%%%mzn-stat: ewma_roc_solutions=%.3f\n", ewma_roc_solutions);
 	printf("%%%%%%mzn-stat: total_time=%.3f\n", to_sec(total_time));
 	printf("%%%%%%mzn-stat: search_time=%.3f\n", to_sec(search_time));
 	printf("%%%%%%mzn-stat: intVars=%d\n", vars.size()); // int variables
 	printf("%%%%%%mzn-stat: propagations=%lld\n", propagations);
    	printf("%%%%%%mzn-stat: ewma_propagations=%lld\n", ewma_propagations);
+	printf("%%%%%%mzn-stat: ewma_roc_propagations=%.3f\n", ewma_roc_propagations);
 	printf("%%%%%%mzn-stat: propagators=%d\n", propagators.size());
 	printf("%%%%%%mzn-stat: boolVars=%d\n", sat.nVars()-2); //bool variables, Do not count constant True/False
 	printf("%%%%%%mzn-stat: learnt=%d\n", sat.learnts.size()); // maybe nogoods
@@ -44,6 +48,7 @@ void Engine::printStats() {
 		printf("%%%%%%mzn-stat: ewma_decision_level_mip=%d\n", ewma_decision_level_mip);
         printf("%%%%%%mzn-stat: best_objective=%d\n", best_sol);
         printf("%%%%%%mzn-stat: ewma_best_objective=%d\n", ewma_best_sol);
+		printf("%%%%%%mzn-stat: ewma_roc_best_objective=%.3f\n", ewma_roc_best_objective);
     }
 	else 
     {
