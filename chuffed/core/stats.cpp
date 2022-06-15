@@ -15,6 +15,7 @@ void Engine::printStats() {
 	auto total_time = std::chrono::duration_cast<duration>(chuffed_clock::now() - start_time);
 	duration search_time = total_time - init_time;
 
+	printf("%%%%%%mzn-stat: restarts=%lld\n", restart_count); 	
 	printf("%%%%%%mzn-stat: conflicts=%lld\n", conflicts); 
 	printf("%%%%%%mzn-stat: ewma_roc_conflicts=%.3f\n", ewma_roc_conflicts); 
 	printf("%%%%%%mzn-stat: nodes=%lld\n",nodes); //increment generated nodes
