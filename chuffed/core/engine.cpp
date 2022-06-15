@@ -208,15 +208,16 @@ Engine::Engine()
     , conflicts(0)
     , ewma_conflicts(0) //test feature ignore for now
     , ewma_roc_conflicts(0)
-    , curr_conflicts(0)
+    , prev_conflicts(0)
     , T_conflict(chuffed_clock::now())
     , T_prev_conflict(chuffed_clock::now())
     , nodes(1)
     , ewma_opennodes(0)
-    , propagations(0)
+    , curr_propagations(0)
 	, ewma_roc_propagations(0)
     , T_propagations(chuffed_clock::now())
     , T_prev_propagations(chuffed_clock::now())
+    , propagations(0)
     , ewma_propagations(0)
     , solutions(0)
     , prev_solutions(0)
@@ -310,13 +311,14 @@ void optimize(IntVar* v, int t) {
 }
 
 inline bool Engine::constrain() {
-   if (opt_var->getVal() != best_sol){
+    if (opt_var->getVal() != best_sol){
         T_prev_best_soln = T_best_sol;
         T_best_sol = chuffed_clock::now();
     }
+
     prev_best_soln = best_sol;
     best_sol = opt_var->getVal();
-    ewma_best_sol = (int)((0.95*ewma_best_sol) + (0.05*(best_sol)));
+    ewma_best_sol = ((0.95*ewma_best_sol) + (0.05*(best_sol)));
     ewma_roc_best_objective = ((0.95*ewma_roc_best_objective) 
      + (0.05*( abs(best_sol - prev_best_soln)/ (std::chrono::duration_cast<std::chrono::seconds>(T_best_sol - T_prev_best_soln).count()))));
 
@@ -363,11 +365,10 @@ bool Engine::propagate() {
     }
 
     last_prop = NULL;
-    int curr_propagations = 0;
-    T_prev_propagations = T_propagations;
-    T_propagations = chuffed_clock::now();
+    curr_propagations = 0;
 
  WakeUp:
+    T_propagations = chuffed_clock::now();
 
     if (!sat.consistent() && !sat.propagate()) return false;
 
@@ -380,7 +381,7 @@ bool Engine::propagate() {
 
     last_prop = NULL;
     
-
+    
     for (int i = 0; i < num_queues; i++) {
         if (p_queue[i].size()) {
             Propagator *p = p_queue[i].last(); p_queue[i].pop();
@@ -394,9 +395,6 @@ bool Engine::propagate() {
     }
 
     ewma_propagations = ceil((0.95*ewma_propagations)+(0.05*curr_propagations));
-    ewma_roc_propagations = ((0.95*propagations) 
-     + (0.05*( curr_propagations/ (std::chrono::duration_cast<std::chrono::seconds>(T_propagations - T_prev_propagations).count()))));
-
     return true;
 }
 
@@ -532,11 +530,6 @@ RESULT Engine::search(const std::string& problemLabel) {
     unsigned int nof_conflicts = getRestartLimit(starts);
     unsigned int conflictC = 0;
 
-    if (T_conflict != T_prev_conflict){
-        ewma_roc_conflicts = ((0.95*ewma_roc_conflicts) 
-        + (0.05*( curr_conflicts / (std::chrono::duration_cast<std::chrono::seconds>(T_conflict - T_prev_conflict).count()))));
-    }
-
     if (so.print_variable_list) {
         std::ofstream s;
         s.open("variable-list");
@@ -566,11 +559,7 @@ RESULT Engine::search(const std::string& problemLabel) {
 #endif
   
     decisionLevelTip.push_back(1);
-    curr_conflicts = 0;
-    T_prev_conflict = T_conflict;
-
-    prev_solutions = solutions;
-    T_prev_solutions = T_solutions;
+    
     /* boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::universal_time(); */
     while (true) {
         
@@ -600,11 +589,23 @@ RESULT Engine::search(const std::string& problemLabel) {
 
         int previousDecisionLevel = decisionLevel();
 
+        T_prev_propagations = T_propagations;
         bool propResult = propagate();
+
+        if( std::chrono::time_point_cast<std::chrono::seconds>(T_propagations)
+         != std::chrono::time_point_cast<std::chrono::seconds>(T_prev_propagations)){
+            ewma_roc_propagations = ((0.95*ewma_roc_propagations) 
+            + (0.05*( curr_propagations / (std::chrono::duration_cast<std::chrono::seconds>(T_propagations - T_prev_propagations).count()))));
+        }
+
         /* boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::universal_time(); */
         /* boost::posix_time::time_duration dur = current_time - start_time; */
         long timeus = 0;
         //        long timeus = dur.total_microseconds();
+
+        prev_solutions = solutions;
+        T_prev_solutions = T_solutions;
+
         if (!propResult) {
 #if DEBUG_VERBOSE
             std::cerr << "failure\n";
@@ -617,13 +618,15 @@ RESULT Engine::search(const std::string& problemLabel) {
 
             clearPropState();
 
-        Conflict:
-            conflicts++; conflictC++;
-            curr_conflicts++;
+            ewma_roc_conflicts = ((0.95*ewma_roc_conflicts) 
+                + (0.05*( conflicts - prev_conflicts / (std::chrono::duration_cast<std::chrono::seconds>(T_conflict - T_prev_conflict).count()))));
 
-            T_conflict = chuffed_clock::now(); //always 0
-            //printf("--------------curr time=%.3f\n", std::chrono::time_point_cast<std::chrono::nanoseconds>(T_conflict));
-            
+            T_prev_conflict = T_conflict;
+            prev_conflicts = conflicts;
+
+        Conflict:
+            T_conflict = chuffed_clock::now();
+            conflicts++; conflictC++;
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
                 (*output_stream) << "% Time limit exceeded!\n";
@@ -756,7 +759,7 @@ RESULT Engine::search(const std::string& problemLabel) {
             }
 
         } else {
-
+            
             if (conflictC >= nof_conflicts) {
                 if (so.verbosity >= 2)
                     std::cerr << "restarting due to number of conflicts\n";
@@ -803,13 +806,13 @@ RESULT Engine::search(const std::string& problemLabel) {
                 }
             }
 
+            
             if (!di) di = branching->branch();
 
-
             if (!di) {
-                
-                T_solutions = chuffed_clock::now();
                 solutions++;
+                T_solutions = chuffed_clock::now();
+
                 ewma_roc_solutions = ((0.95*ewma_roc_solutions) 
                    + (0.05*( abs(solutions - prev_solutions)/ (std::chrono::duration_cast<std::chrono::seconds>(T_solutions - T_prev_solutions).count()))));
 
@@ -918,6 +921,9 @@ RESULT Engine::search(const std::string& problemLabel) {
             delete di;
 
         }
+        /////////////
+         
+       
     }
     //for test feature ignore for now
     //ewma_conflicts = ceil((0.95*ewma_conflicts)+ 0.05*curr_conflicts);
@@ -995,5 +1001,6 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
 #endif
 
     if (so.verbosity >= 1) printStats();
+
     if (so.parallel) master.finalizeMPI();
 }
