@@ -43,8 +43,8 @@ public:
     IntVar *opt_var;
     int opt_type;
     int best_sol, prev_best_soln;
-    int ewma_best_sol;
-    float ewma_roc_best_objective;
+    double ewma_best_sol;
+    double ewma_roc_best_objective;
     time_point T_best_sol, T_prev_best_soln;
     RESULT status;
     time_point time_out;
@@ -67,11 +67,11 @@ public:
     duration init_time, opt_time;
     double base_memory;
     long long int conflicts, nodes, propagations, curr_propagations, solutions, prev_solutions, next_simp_db;
-    float ewma_roc_propagations, ewma_roc_conflicts, ewma_roc_solutions;
+    double ewma_roc_propagations, ewma_roc_conflicts, ewma_roc_solutions;
     time_point T_propagations, T_prev_propagations;
     time_point T_solutions, T_prev_solutions;
-    long long int ewma_conflicts, ewma_opennodes, ewma_propagations;
-    long long int ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
+    double ewma_conflicts, ewma_opennodes, ewma_propagations;
+    double ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
     long long int prev_conflicts;
     time_point T_conflict, T_prev_conflict;
     int peak_depth;

@@ -259,10 +259,10 @@ inline void Engine::doFixPointStuff() {
 
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes; //increment generated nodes
-    ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - decisionLevel())); //change in open nodes
-    ewma_decision_level_engine = ceil(0.95*ewma_decision_level_engine + (0.05*decisionLevel()));
-    ewma_decision_level_sat = ceil(0.95*ewma_decision_level_sat + (0.05*sat.decisionLevel()));
-    ewma_decision_level_mip = ceil(0.95*ewma_decision_level_mip + (0.05*mip->decisionLevel()));
+    ewma_opennodes = 0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - decisionLevel()); //change in open nodes
+    ewma_decision_level_engine = 0.95*ewma_decision_level_engine + (0.05*decisionLevel());
+    ewma_decision_level_sat = 0.95*ewma_decision_level_sat + (0.05*sat.decisionLevel());
+    ewma_decision_level_mip = 0.95*ewma_decision_level_mip + (0.05*mip->decisionLevel());
 
     printStats();
     altpath.push_back(alt);
@@ -394,7 +394,7 @@ bool Engine::propagate() {
         }
     }
 
-    ewma_propagations = ceil((0.95*ewma_propagations)+(0.05*curr_propagations));
+    ewma_propagations = (0.95*ewma_propagations)+(0.05*curr_propagations);
     return true;
 }
 

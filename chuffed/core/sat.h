@@ -111,9 +111,9 @@ public:
 	// Statistics
 	int bin_clauses, tern_clauses, long_clauses, learnt_clauses;
 	long long int propagations, prev_back_jumps, back_jumps, nrestarts, next_simp_db;
-    float ewma_roc_back_jumps;
+    double ewma_roc_back_jumps;
 	time_point T_back_jumps, T_prev_back_jumps;
-	long long int ewma_back_jumps; //exp weighted moving avg of backjumps
+	double ewma_back_jumps; //exp weighted moving avg of backjumps
   	long long int clauses_literals, learnts_literals, max_literals, tot_literals;
 	double avg_depth;
 	double confl_rate;
