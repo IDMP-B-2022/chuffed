@@ -42,10 +42,8 @@ public:
     BranchGroup *branching;
     IntVar *opt_var;
     int opt_type;
-    int best_sol, prev_best_soln;
-    double ewma_best_sol;
-    double ewma_roc_best_objective;
-    time_point T_best_sol, T_prev_best_soln;
+    int best_sol;
+    int ewma_best_sol;
     RESULT status;
     time_point time_out;
 
@@ -66,16 +64,15 @@ public:
     time_point start_time;
     duration init_time, opt_time;
     double base_memory;
-    long long int conflicts, nodes, propagations, curr_propagations, solutions, prev_solutions, next_simp_db;
-    double ewma_roc_propagations, ewma_roc_conflicts, ewma_roc_solutions;
-    time_point T_propagations, T_prev_propagations;
-    time_point T_solutions, T_prev_solutions;
-    double ewma_conflicts, ewma_opennodes, ewma_propagations;
-    double ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
-    long long int prev_conflicts;
-    time_point T_conflict, T_prev_conflict;
+    long long int conflicts, nodes, propagations, solutions, next_simp_db;
+    long long int ewma_conflicts, ewma_opennodes, ewma_propagations;
+    long long int ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
     int peak_depth;
     int restart_count;
+
+    long long int nodepath_len;
+    int decisionLevel_treesize;
+    
 
     std::ostream* output_stream;
 private:

@@ -11,7 +11,7 @@ Options::Options() :
 		nof_solutions(1)
 	, time_out(0)
 	, rnd_seed(0)
-	, verbosity(0)
+	, verbosity(1)
 	, print_sol(true)
 	, restart_scale(1000000000)
     , restart_scale_override(true)

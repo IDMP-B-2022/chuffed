@@ -201,29 +201,15 @@ Engine::Engine()
     , start_time(chuffed_clock::now())
     , opt_time(duration::zero())
     , ewma_best_sol(0)
-    , ewma_roc_best_objective(0)
-    , prev_best_soln(0)
-    , T_best_sol (chuffed_clock::now())
-    , T_prev_best_soln (chuffed_clock::now())
     , conflicts(0)
     , ewma_conflicts(0) //test feature ignore for now
-    , ewma_roc_conflicts(0)
-    , prev_conflicts(0)
-    , T_conflict(chuffed_clock::now())
-    , T_prev_conflict(chuffed_clock::now())
-    , nodes(1)
+    , nodes(0)
+    , nodepath_len(0)
     , ewma_opennodes(0)
-    , curr_propagations(0)
-	, ewma_roc_propagations(0)
-    , T_propagations(chuffed_clock::now())
-    , T_prev_propagations(chuffed_clock::now())
     , propagations(0)
     , ewma_propagations(0)
+    , decisionLevel_treesize(0)
     , solutions(0)
-    , prev_solutions(0)
-    , ewma_roc_solutions(0)
-    , T_solutions(chuffed_clock::now())
-    , T_prev_solutions(chuffed_clock::now())
     , next_simp_db(0)
     , output_stream(&std::cout)
 {
@@ -248,6 +234,7 @@ inline void Engine::newDecisionLevel() {
     if (so.mip) mip->newDecisionLevel();
     assert(dec_info.size() == decisionLevel());
     peak_depth = max(peak_depth, decisionLevel());
+    
 }
 
 inline void Engine::doFixPointStuff() {
@@ -259,12 +246,12 @@ inline void Engine::doFixPointStuff() {
 
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes; //increment generated nodes
-    ewma_opennodes = 0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - decisionLevel()); //change in open nodes
-    ewma_decision_level_engine = 0.95*ewma_decision_level_engine + (0.05*decisionLevel());
-    ewma_decision_level_sat = 0.95*ewma_decision_level_sat + (0.05*sat.decisionLevel());
-    ewma_decision_level_mip = 0.95*ewma_decision_level_mip + (0.05*mip->decisionLevel());
+    ewma_opennodes = ceil(0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - decisionLevel())); //change in open nodes
+    ewma_decision_level_engine = ceil(0.95*ewma_decision_level_engine + (0.05*decisionLevel()));
+    ewma_decision_level_sat = ceil(0.95*ewma_decision_level_sat + (0.05*sat.decisionLevel()));
+    ewma_decision_level_mip = ceil(0.95*ewma_decision_level_mip + (0.05*mip->decisionLevel()));
 
-    printStats();
+    //printStats();
     altpath.push_back(alt);
     if (di.var) {
 #if DEBUG_VERBOSE
@@ -311,22 +298,15 @@ void optimize(IntVar* v, int t) {
 }
 
 inline bool Engine::constrain() {
-    if (opt_var->getVal() != best_sol){
-        T_prev_best_soln = T_best_sol;
-        T_best_sol = chuffed_clock::now();
-    }
-
-    prev_best_soln = best_sol;
     best_sol = opt_var->getVal();
-    ewma_best_sol = ((0.95*ewma_best_sol) + (0.05*(best_sol)));
-    ewma_roc_best_objective = ((0.95*ewma_roc_best_objective) 
-     + (0.05*( abs(best_sol - prev_best_soln)/ (std::chrono::duration_cast<std::chrono::seconds>(T_best_sol - T_prev_best_soln).count()))));
+    ewma_best_sol = (int)((0.95*ewma_best_sol) + (0.05*(best_sol)));
 
     opt_time = std::chrono::duration_cast<duration>(chuffed_clock::now() - start_time) - init_time;
 
     sat.btToLevel(0);
     restart_count++;
     nodepath.resize(0);
+    nodepath_len = nodepath.size();
     altpath.resize(0);
     /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
@@ -365,10 +345,9 @@ bool Engine::propagate() {
     }
 
     last_prop = NULL;
-    curr_propagations = 0;
+    int curr_propagations = 0;
 
  WakeUp:
-    T_propagations = chuffed_clock::now();
 
     if (!sat.consistent() && !sat.propagate()) return false;
 
@@ -381,7 +360,7 @@ bool Engine::propagate() {
 
     last_prop = NULL;
     
-    
+
     for (int i = 0; i < num_queues; i++) {
         if (p_queue[i].size()) {
             Propagator *p = p_queue[i].last(); p_queue[i].pop();
@@ -394,7 +373,7 @@ bool Engine::propagate() {
         }
     }
 
-    ewma_propagations = (0.95*ewma_propagations)+(0.05*curr_propagations);
+    ewma_propagations = ceil((0.95*ewma_propagations)+(0.05*curr_propagations));
     return true;
 }
 
@@ -429,6 +408,7 @@ void Engine::btToLevel(int level) {
         std::cerr << "trail_lim is now: " << showVec(trail_lim) << "\n";
     }
     dec_info.resize(level);
+    decisionLevel_treesize = decisionLevelTip.at(decisionLevel()); //##
 }
 
 
@@ -559,7 +539,7 @@ RESULT Engine::search(const std::string& problemLabel) {
 #endif
   
     decisionLevelTip.push_back(1);
-    
+    int curr_conflicts = 0;
     /* boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::universal_time(); */
     while (true) {
         
@@ -569,6 +549,7 @@ RESULT Engine::search(const std::string& problemLabel) {
         nextnodeid++;
         int parent = (nodepath.size() == 0) ? (-1) : (nodepath[nodepath.size()-1]);
         nodepath.push_back(nodeid);
+        nodepath_len = nodepath.size();
         int myalt = (altpath.size() == 0) ? (-1) : (altpath[altpath.size()-1]);
 #if DEBUG_VERBOSE
         std::cerr << "propagate (";
@@ -580,32 +561,30 @@ RESULT Engine::search(const std::string& problemLabel) {
             std::cerr << " " << altpath[i];
         std::cerr << ")\n";
 #endif
+        
         if (decisionLevel() >= decisionLevelTip.size())
             decisionLevelTip.resize(decisionLevel()+1);
-        decisionLevelTip[decisionLevel()] = nodepath.size();
+        decisionLevelTip[decisionLevel()] = nodepath.size(); 
+        decisionLevel_treesize = decisionLevelTip.at(decisionLevel());
+
+        printf("---------search iteration %d---------\n", nodepath.size()); //##
+        /*
+        for (int i = 0 ; i < decisionLevelTip.size() ; i++)
+            std::cout<<" " << decisionLevelTip.at(i);
+        std::cout<<endl;*/
+        printStats(); //## out out statistics here for correct decisionLevel_treesize values
+
 #if DEBUG_VERBOSE
         std::cerr << "setting decisionLevelTip[" << decisionLevel() << "] to " << nodepath.size() << "\n";
 #endif
 
         int previousDecisionLevel = decisionLevel();
 
-        T_prev_propagations = T_propagations;
         bool propResult = propagate();
-
-        if( std::chrono::time_point_cast<std::chrono::seconds>(T_propagations)
-         != std::chrono::time_point_cast<std::chrono::seconds>(T_prev_propagations)){
-            ewma_roc_propagations = ((0.95*ewma_roc_propagations) 
-            + (0.05*( curr_propagations / (std::chrono::duration_cast<std::chrono::seconds>(T_propagations - T_prev_propagations).count()))));
-        }
-
         /* boost::posix_time::ptime current_time = boost::posix_time::microsec_clock::universal_time(); */
         /* boost::posix_time::time_duration dur = current_time - start_time; */
         long timeus = 0;
         //        long timeus = dur.total_microseconds();
-
-        prev_solutions = solutions;
-        T_prev_solutions = T_solutions;
-
         if (!propResult) {
 #if DEBUG_VERBOSE
             std::cerr << "failure\n";
@@ -618,15 +597,9 @@ RESULT Engine::search(const std::string& problemLabel) {
 
             clearPropState();
 
-            ewma_roc_conflicts = ((0.95*ewma_roc_conflicts) 
-                + (0.05*( conflicts - prev_conflicts / (std::chrono::duration_cast<std::chrono::seconds>(T_conflict - T_prev_conflict).count()))));
-
-            T_prev_conflict = T_conflict;
-            prev_conflicts = conflicts;
-
         Conflict:
-            T_conflict = chuffed_clock::now();
             conflicts++; conflictC++;
+            curr_conflicts++;
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
                 (*output_stream) << "% Time limit exceeded!\n";
@@ -711,7 +684,9 @@ RESULT Engine::search(const std::string& problemLabel) {
 #endif
 
                     rewindPaths(profilerConnector, previousDecisionLevel, decisionLevel(), (so.send_skipped ? REWIND_SEND_SKIPPED : REWIND_OMIT_SKIPPED), timeus);
-                                
+                    nodepath_len = nodepath.size();
+                    decisionLevel_treesize = decisionLevelTip.at(decisionLevel());
+
                     std::stringstream ss2;
                     /* ss2 << "-> "; */
                     string ls = getLitString(toInt(sat.out_learnt[0]));
@@ -736,6 +711,7 @@ RESULT Engine::search(const std::string& problemLabel) {
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
                     rewindPaths(profilerConnector, previousDecisionLevel, decisionLevel(), (so.send_skipped ? REWIND_SEND_SKIPPED : REWIND_OMIT_SKIPPED), timeus);
+                    nodepath_len = nodepath.size();
                 }
 #endif
                 makeDecision(di, 1);
@@ -748,6 +724,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 sat.btToLevel(0);
                 restart_count++;
                 nodepath.resize(0);
+                nodepath_len = nodepath.size();
                 altpath.resize(0);
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
@@ -759,7 +736,7 @@ RESULT Engine::search(const std::string& problemLabel) {
             }
 
         } else {
-            
+
             if (conflictC >= nof_conflicts) {
                 if (so.verbosity >= 2)
                     std::cerr << "restarting due to number of conflicts\n";
@@ -768,6 +745,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 sat.btToLevel(0);
                 restart_count++;
                 nodepath.resize(0);
+                nodepath_len = nodepath.size();
                 altpath.resize(0);
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
@@ -806,16 +784,10 @@ RESULT Engine::search(const std::string& problemLabel) {
                 }
             }
 
-            
             if (!di) di = branching->branch();
 
             if (!di) {
                 solutions++;
-                T_solutions = chuffed_clock::now();
-
-                ewma_roc_solutions = ((0.95*ewma_roc_solutions) 
-                   + (0.05*( abs(solutions - prev_solutions)/ (std::chrono::duration_cast<std::chrono::seconds>(T_solutions - T_prev_solutions).count()))));
-
                 if (std::stringstream* oss = dynamic_cast<std::stringstream*>(output_stream)) {
                     oss->str("");
                 }
@@ -921,9 +893,6 @@ RESULT Engine::search(const std::string& problemLabel) {
             delete di;
 
         }
-        /////////////
-         
-       
     }
     //for test feature ignore for now
     //ewma_conflicts = ceil((0.95*ewma_conflicts)+ 0.05*curr_conflicts);

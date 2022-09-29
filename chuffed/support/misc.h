@@ -65,7 +65,7 @@ static inline unsigned int myrand(int& rseed) {
 
 using chuffed_clock = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<chuffed_clock>;
-using duration = std::chrono::milliseconds;
+using duration = std::chrono::microseconds;
 
 static inline double to_sec(duration d) {
 	return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();

@@ -124,13 +124,8 @@ void SAT::analyze(int nodeid, std::set<int>& contributingNogoods) {
 	clearSeen();
 
 	int btlevel = findBackTrackLevel();
-	T_prev_back_jumps = T_back_jumps;
-    T_back_jumps = chuffed_clock::now();
-	prev_back_jumps = back_jumps;
 	back_jumps += decisionLevel()-1-btlevel;
-	ewma_back_jumps = (0.95*ewma_back_jumps) + (0.05*(back_jumps)); //moving avg in change of backjumps
-	ewma_roc_back_jumps = ((0.95*ewma_roc_back_jumps) 
-     + (0.05*( abs(back_jumps - prev_back_jumps)/ (std::chrono::duration_cast<std::chrono::seconds>(T_back_jumps - T_prev_back_jumps).count()))));
+	ewma_back_jumps = ceil((0.95*ewma_back_jumps) + (0.05*(decisionLevel()-1-btlevel))); //moving avg in change of backjumps
 
 //	fprintf(stderr, "btlevel = %d\n", btlevel);
 	btToLevel(btlevel);
@@ -553,3 +548,4 @@ void SAT::checkExplanation(Clause& c, int clevel, int index) {
 	}
 
 }
+
