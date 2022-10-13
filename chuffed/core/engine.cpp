@@ -205,11 +205,12 @@ Engine::Engine()
     , ewma_conflicts(0) //test feature ignore for now
     , nodes(0)
     , nodepath_len(0)
+    , opennodes(0)
     , ewma_opennodes(0)
     , propagations(0)
     , ewma_propagations(0)
     , decisionLevel_treesize(0)
-    , ewma_decision_level_engine(decisionLevel())
+    , ewma_decision_level_engine(0)
     , ewma_decision_level_sat(0)
     , ewma_decision_level_mip(0)
     , solutions(0)
@@ -249,6 +250,7 @@ inline void Engine::doFixPointStuff() {
 
 inline void Engine::makeDecision(DecInfo& di, int alt) {
     ++nodes; //increment generated nodes
+    opennodes = vars.size() + sat.nVars() - decisionLevel();
     ewma_opennodes = 0.95*ewma_opennodes + 0.05*( vars.size() + sat.nVars() - decisionLevel()); //change in open nodes
     ewma_decision_level_engine = 0.95*ewma_decision_level_engine + (0.05*decisionLevel());
     ewma_decision_level_sat = 0.95*ewma_decision_level_sat + (0.05*sat.decisionLevel());
@@ -376,7 +378,7 @@ bool Engine::propagate() {
         }
     }
 
-    ewma_propagations = (0.95*ewma_propagations)+(0.05*curr_propagations);
+    ewma_propagations = (0.95*ewma_propagations)+(0.05*propagations);//#
     return true;
 }
 
@@ -603,6 +605,7 @@ RESULT Engine::search(const std::string& problemLabel) {
         Conflict:
             conflicts++; conflictC++;
             curr_conflicts++;
+            ewma_conflicts = (0.95*ewma_conflicts)+ 0.05*conflicts;
 
             if (so.time_out > duration(0) && chuffed_clock::now() > time_out) {
                 (*output_stream) << "% Time limit exceeded!\n";

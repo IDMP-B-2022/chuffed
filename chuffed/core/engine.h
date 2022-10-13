@@ -65,6 +65,7 @@ public:
     duration init_time, opt_time;
     double base_memory;
     long long int conflicts, nodes, propagations, solutions, next_simp_db;
+    long long int opennodes;
     float ewma_conflicts, ewma_opennodes, ewma_propagations;
     float ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
     int peak_depth;
