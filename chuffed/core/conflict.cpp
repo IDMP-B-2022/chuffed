@@ -125,7 +125,7 @@ void SAT::analyze(int nodeid, std::set<int>& contributingNogoods) {
 
 	int btlevel = findBackTrackLevel();
 	back_jumps += decisionLevel()-1-btlevel;
-	ewma_back_jumps = ceil((0.95*ewma_back_jumps) + (0.05*(decisionLevel()-1-btlevel))); //moving avg in change of backjumps
+	ewma_back_jumps = (0.95*ewma_back_jumps) + (0.05*(decisionLevel()-1-btlevel)); //moving avg in change of backjumps
 
 //	fprintf(stderr, "btlevel = %d\n", btlevel);
 	btToLevel(btlevel);

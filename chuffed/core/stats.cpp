@@ -15,14 +15,14 @@ void Engine::printStats() {
 	duration search_time = total_time - init_time;
 
 	printf("%%%%%%mzn-stat: conflicts=%lld\n", conflicts);
-	//printf("%%%%%%mzn-stat: ewma_conflicts=%lld\n", ewma_conflicts);
+	printf("%%%%%%mzn-stat: ewma_conflicts=%lld\n", ewma_conflicts);
 	printf("%%%%%%mzn-stat: decisions=%lld\n",nodes); //number of decisions made
 	printf("%%%%%%mzn-stat: search_iterations=%lld\n",nodepath_len); //number of search iterations
-	//printf("%%%%%%mzn-stat: ewma_opennodes=%lld\n", ewma_opennodes); //change in num of open nodes
+	printf("%%%%%%mzn-stat: ewma_opennodes=%lld\n", ewma_opennodes); //change in num of open nodes
 	
 	printf("%%%%%%mzn-stat: vars=%d\n", vars.size() + sat.nVars()-2); // variables
 	printf("%%%%%%mzn-stat: back_jumps=%lld\n", sat.back_jumps);
-	//printf("%%%%%%mzn-stat: ewma_back_jumps=%lld\n", sat.ewma_back_jumps);
+	printf("%%%%%%mzn-stat: ewma_back_jumps=%lld\n", sat.ewma_back_jumps);
  	printf("%%%%%%mzn-stat: solutions=%lld\n", solutions); // num of solutions found
 	printf("%%%%%%mzn-stat: total_time=%3.6f\n",to_sec(total_time)); //precision of microseconds(see misc.h)
 	
@@ -30,7 +30,7 @@ void Engine::printStats() {
 	printf("%%%%%%mzn-stat: intVars=%d\n", vars.size()); // int variables
 	printf("%%%%%%mzn-stat: propagations=%lld\n", propagations);
 	printf("%%%%%%mzn-stat: sat_propagations=%lld\n", sat.propagations);
-   	//printf("%%%%%%mzn-stat: ewma_propagations=%lld\n", ewma_propagations);
+   	printf("%%%%%%mzn-stat: ewma_propagations=%lld\n", ewma_propagations);
 	printf("%%%%%%mzn-stat: propagators=%d\n", propagators.size());
 
 	printf("%%%%%%mzn-stat: boolVars=%d\n", sat.nVars()-2); //bool variables, Do not count constant True/False
@@ -41,7 +41,7 @@ void Engine::printStats() {
 	
 	printf("%%%%%%mzn-stat: peak_depth=%d\n", peak_depth);
 	printf("%%%%%%mzn-stat: decision_level_engine=%d\n", decisionLevel());
-	//printf("%%%%%%mzn-stat: ewma_decision_level_engine=%d\n", ewma_decision_level_engine);
+	printf("%%%%%%mzn-stat: ewma_decision_level_engine=%d\n", ewma_decision_level_engine);
 	printf("%%%%%%mzn-stat: decision_level_sat=%d\n", sat.decisionLevel());
 	printf("%%%%%%mzn-stat: decision_level_treesize=%d\n", decisionLevel_treesize);
 
@@ -59,16 +59,16 @@ void Engine::printStats() {
 	// only for non-SAT problems
 	if (opt_var) {
 		printf("%%%%%%mzn-stat: decision_level_mip=%d\n", mip->decisionLevel());
-		//printf("%%%%%%mzn-stat: ewma_decision_level_mip=%d\n", ewma_decision_level_mip);
+		printf("%%%%%%mzn-stat: ewma_decision_level_mip=%d\n", ewma_decision_level_mip);
         printf("%%%%%%mzn-stat: best_objective=%d\n", best_sol);
-        //printf("%%%%%%mzn-stat: ewma_best_objective=%d\n", ewma_best_sol);
+        printf("%%%%%%mzn-stat: ewma_best_objective=%d\n", ewma_best_sol);
     }
 	else 
     {
 		printf("%%%%%%mzn-stat: decision_level_mip=NaN\n");
-		//printf("%%%%%%mzn-stat: ewma_decision_level_mip=NaN\n");
+		printf("%%%%%%mzn-stat: ewma_decision_level_mip=NaN\n");
         printf("%%%%%%mzn-stat: best_objective=NaN\n");
-        // printf("%%%%%%mzn-stat: ewma_best_objective=NaN\n");
+        printf("%%%%%%mzn-stat: ewma_best_objective=NaN\n");
     }
 	printf("%%%%%%mzn-stat-end\n");
 

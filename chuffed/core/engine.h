@@ -43,7 +43,7 @@ public:
     IntVar *opt_var;
     int opt_type;
     int best_sol;
-    int ewma_best_sol;
+    float ewma_best_sol; 
     RESULT status;
     time_point time_out;
 
@@ -65,8 +65,8 @@ public:
     duration init_time, opt_time;
     double base_memory;
     long long int conflicts, nodes, propagations, solutions, next_simp_db;
-    long long int ewma_conflicts, ewma_opennodes, ewma_propagations;
-    long long int ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
+    float ewma_conflicts, ewma_opennodes, ewma_propagations;
+    float ewma_decision_level_engine, ewma_decision_level_sat, ewma_decision_level_mip;
     int peak_depth;
     int restart_count;
 
