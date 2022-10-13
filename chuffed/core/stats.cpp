@@ -18,7 +18,7 @@ void Engine::printStats() {
 	printf("%%%%%%mzn-stat: ewma_conflicts=%6.2f\n", ewma_conflicts);
 	printf("%%%%%%mzn-stat: decisions=%lld\n",nodes); //number of decisions made
 	printf("%%%%%%mzn-stat: search_iterations=%lld\n",nodepath_len); //number of search iterations
-	printf("%%%%%%mzn-stat: opennodes=%d\n", opennodes);
+	printf("%%%%%%mzn-stat: opennodes=%lld\n", opennodes);
 	printf("%%%%%%mzn-stat: ewma_opennodes=%6.2f\n", ewma_opennodes); //change in num of open nodes
 	
 	printf("%%%%%%mzn-stat: vars=%d\n", vars.size() + sat.nVars()-2); // variables
