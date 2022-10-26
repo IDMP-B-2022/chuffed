@@ -246,8 +246,8 @@ add_library(chuffed_fzn
   chuffed/flatzinc/ast.h
 )
 
-add_executable(fzn-chuffed chuffed/flatzinc/fzn-chuffed.cpp)
-target_link_libraries(fzn-chuffed chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT})
+add_executable(modded-fzn-chuffed chuffed/flatzinc/fzn-chuffed.cpp)
+target_link_libraries(modded-fzn-chuffed chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT})
 
 # ------------- Chuffed Examples -------------
 
@@ -363,9 +363,9 @@ add_dependencies(examples
 # ------------- TARGET install -------------
 include(GNUInstallDirs)
 
-file(RELATIVE_PATH REL_INSTALL_BINARY ${CMAKE_INSTALL_PREFIX}/minizinc/chuffed/solvers ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/fzn-chuffed)
-configure_file(chuffed.msc.in chuffed.msc)
+file(RELATIVE_PATH REL_INSTALL_BINARY ${CMAKE_INSTALL_PREFIX}/minizinc/chuffed/solvers ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/modded-fzn-chuffed)
+configure_file(modded-chuffed.msc.in modded-chuffed.msc)
 
-install(TARGETS fzn-chuffed RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(DIRECTORY chuffed/flatzinc/mznlib/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/chuffed PATTERN "chuffed/flatzinc/mznlib/*")
-install(FILES ${CMAKE_BINARY_DIR}/chuffed.msc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/solvers)
+install(TARGETS modded-fzn-chuffed RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY modded-chuffed/flatzinc/mznlib/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/modded-chuffed PATTERN "chuffed/flatzinc/mznlib/*")
+install(FILES ${CMAKE_BINARY_DIR}/modded-chuffed.msc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/solvers)
