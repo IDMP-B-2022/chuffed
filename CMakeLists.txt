@@ -363,7 +363,7 @@ add_dependencies(examples
 # ------------- TARGET install -------------
 include(GNUInstallDirs)
 
-file(RELATIVE_PATH REL_INSTALL_BINARY ${CMAKE_INSTALL_PREFIX}/minizinc/chuffed/solvers ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/modded-fzn-chuffed)
+file(RELATIVE_PATH REL_INSTALL_BINARY ${CMAKE_INSTALL_PREFIX}/minizinc/chuffed/solvers ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/fzn-modded-chuffed)
 configure_file(modded-chuffed.msc.in modded-chuffed.msc)
 
 install(TARGETS fzn-modded-chuffed RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
