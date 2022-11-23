@@ -367,5 +367,5 @@ file(RELATIVE_PATH REL_INSTALL_BINARY ${CMAKE_INSTALL_PREFIX}/minizinc/chuffed/s
 configure_file(modded-chuffed.msc.in modded-chuffed.msc)
 
 install(TARGETS fzn-modded-chuffed RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(DIRECTORY modded-chuffed/flatzinc/mznlib/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/modded-chuffed PATTERN "chuffed/flatzinc/mznlib/*")
+install(DIRECTORY chuffed/flatzinc/mznlib/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/modded-chuffed PATTERN "chuffed/flatzinc/mznlib/*")
 install(FILES ${CMAKE_BINARY_DIR}/modded-chuffed.msc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/minizinc/solvers)
