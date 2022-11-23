@@ -572,7 +572,7 @@ RESULT Engine::search(const std::string& problemLabel) {
         decisionLevelTip[decisionLevel()] = nodepath.size(); 
         decisionLevel_treesize = decisionLevelTip.at(decisionLevel());
 
-        printf("---------search iteration %ld---------\n", nodepath.size()); //##
+        // printf("---------search iteration %ld---------\n", nodepath.size()); //##
         /*
         for (int i = 0 ; i < decisionLevelTip.size() ; i++)
             std::cout<<" " << decisionLevelTip.at(i);
